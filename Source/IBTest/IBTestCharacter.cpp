@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -39,6 +40,7 @@ AIBTestCharacter::AIBTestCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 }
 
 void AIBTestCharacter::BeginPlay()
@@ -57,6 +59,19 @@ void AIBTestCharacter::BeginPlay()
 
 }
 
+void AIBTestCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (PhysicsHandleComponent && PhysicsHandleComponent->GetGrabbedComponent())
+	{
+		FVector StartLocation;
+		FVector EndLocation; 
+		GetPlayerInteractionRange(StartLocation, EndLocation);
+		PhysicsHandleComponent->SetTargetLocation(EndLocation);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////// Input
 
 void AIBTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -73,6 +88,16 @@ void AIBTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AIBTestCharacter::Look);
+
+		// Interact 1
+		EnhancedInputComponent->BindAction(Interact1Action, ETriggerEvent::Triggered, this, &AIBTestCharacter::Interact1);
+
+		// Interact 2 
+		EnhancedInputComponent->BindAction(Interact2Action, ETriggerEvent::Triggered, this, &AIBTestCharacter::Interact2);
+
+		// Grabbing
+		EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Started, this, &AIBTestCharacter::BeginGrab);
+		EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Completed, this, &AIBTestCharacter::EndGrab);
 	}
 	else
 	{
@@ -105,6 +130,64 @@ void AIBTestCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AIBTestCharacter::Interact1(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Interact 1"));
+}
+
+void AIBTestCharacter::Interact2(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Interact 2"));
+}
+
+void AIBTestCharacter::BeginGrab(const FInputActionValue& Value)
+{
+	FHitResult HitResult;    
+    FCollisionQueryParams QueryParams(FName(TEXT("GrabTrace")), false, GetOwner());    
+
+	FVector StartLocation;
+	FVector EndLocation; 
+	GetPlayerInteractionRange(StartLocation, EndLocation);
+
+	GetWorld()->LineTraceSingleByObjectType
+    (
+        HitResult,
+        StartLocation,
+        EndLocation,                      
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+        QueryParams
+    );
+
+	AActor* HitActor = HitResult.GetActor();
+	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+
+	if (HitActor && HitComponent)
+	{
+		PhysicsHandleComponent->GrabComponentAtLocation
+		(
+			HitComponent,
+			NAME_None,
+			HitComponent->GetComponentLocation()
+		);
+	}
+}
+
+void AIBTestCharacter::EndGrab(const FInputActionValue& Value)
+{
+	if (PhysicsHandleComponent && PhysicsHandleComponent->GetGrabbedComponent())
+	{
+		PhysicsHandleComponent->ReleaseComponent();
+	}
+}
+
+void AIBTestCharacter::GetPlayerInteractionRange(FVector& StartLocation, FVector& EndLocation)
+{
+	if(!FirstPersonCameraComponent) return;
+
+	StartLocation = FirstPersonCameraComponent->GetComponentLocation();
+	EndLocation = StartLocation + FirstPersonCameraComponent->GetForwardVector() * 300.f;
 }
 
 void AIBTestCharacter::SetHasRifle(bool bNewHasRifle)
