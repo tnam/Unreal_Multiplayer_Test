@@ -10,6 +10,6 @@ public class IBTest : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "DeveloperSettings" });
 	}
 }

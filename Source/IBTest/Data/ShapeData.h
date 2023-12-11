@@ -9,7 +9,7 @@
 
  /**  */
 USTRUCT(BlueprintType)
-struct FShapeData : public FGameplayTagTableRow
+struct FShapeData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 

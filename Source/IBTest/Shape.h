@@ -24,10 +24,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	FORCEINLINE FName GetShapeID() { return ShapeID; }
+
 public:
 
-	UPROPERTY(EditAnywhere)
-	FGameplayTag ShapeTag;
+	UPROPERTY(EditAnywhere, Category = "Shape")
+	FName ShapeID;
 
 private:
 

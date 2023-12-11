@@ -23,9 +23,9 @@ public:
 
 	/** List of shapes required for the recipe */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayTagContainer InShapes; 
+	TMap<FName, int32> InShapes; 
 
 	/** End result of the recipe */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayTag OutShapes; 
+	FName OutShape; 
 };
