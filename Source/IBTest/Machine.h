@@ -10,6 +10,7 @@
 
 class UBoxComponent;
 class AShape;
+class UNiagaraSystem;
 
 UCLASS()
 class IBTEST_API AMachine : public AActor
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UBoxComponent> CollisionBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UNiagaraSystem> SpawnEffect;
 
 public:
 
@@ -52,6 +56,8 @@ protected:
 	bool IsMissingIngredient(const FRecipeData* RecipeData) const;
 
 	void SpawnShapeByName(const FName& ShapeName);
+
+	void PlaySpawnEffect();
 
 public:	
 	// Called every frame

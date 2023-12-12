@@ -6,6 +6,7 @@
 #include "Shape.h"
 #include "Data/ShapeData.h"
 #include "GameplaySettings.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AMachine::AMachine()
@@ -63,7 +64,7 @@ void AMachine::CheckRecipes()
 
 void AMachine::ConsumeRecipe(const FRecipeData* RecipeData)
 {
-	// Destroy shape ingredients (only the ones required)
+	// Destroy shape ingredients (only the ones used by the recipe)
 	const TMap<FName, int>& InputShapes = RecipeData->InShapes;
 	for (const auto& InputShape : InputShapes)
 	{
@@ -82,7 +83,9 @@ void AMachine::ConsumeRecipe(const FRecipeData* RecipeData)
 		}
 	}
 
+	// Finally spawn the output shape
 	SpawnShapeByName(RecipeData->OutShape);
+	PlaySpawnEffect();
 }
 
 bool AMachine::IsMissingIngredient(const FRecipeData* RecipeData) const
@@ -111,11 +114,19 @@ void AMachine::SpawnShapeByName(const FName& ShapeName)
 		if (FShapeData* ShapeData = Shapes->FindRow<FShapeData>(ShapeName, ""))
 		{
 			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			SpawnParameters.Owner = this;
 			const FTransform ShapeTransform = FTransform(FQuat::Identity, GetActorLocation());
 	
-			const AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ShapeData->ShapeClass.Get(), ShapeTransform, SpawnParameters);
+			UClass* ShapeClass = ShapeData->ShapeClass.Get();
+			GetWorld()->SpawnActor<AActor>(ShapeClass, ShapeTransform, SpawnParameters);
 		}
 	}
+}
+
+void AMachine::PlaySpawnEffect()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SpawnEffect, GetActorLocation());
 }
 
 // Called every frame

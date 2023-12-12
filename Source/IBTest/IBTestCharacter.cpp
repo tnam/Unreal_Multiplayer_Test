@@ -11,6 +11,7 @@
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Interfaces/IInteractionInterface.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -134,32 +135,25 @@ void AIBTestCharacter::Look(const FInputActionValue& Value)
 
 void AIBTestCharacter::Interact1(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interact 1"));
+	const FHitResult HitResult = PlayerTrace();    
+	AActor* HitActor = HitResult.GetActor();
+
+	if (HitActor &&
+		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+	{
+		IInteractionInterface::Execute_Interact1(HitActor);
+	}
 }
 
 void AIBTestCharacter::Interact2(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Interact 2"));
+	FHitResult HitResult = PlayerTrace();    
 }
 
 void AIBTestCharacter::BeginGrab(const FInputActionValue& Value)
 {
-	FHitResult HitResult;    
-    FCollisionQueryParams QueryParams(FName(TEXT("GrabTrace")), false, GetOwner());    
-
-	FVector StartLocation;
-	FVector EndLocation; 
-	GetPlayerInteractionRange(StartLocation, EndLocation);
-
-	GetWorld()->LineTraceSingleByObjectType
-    (
-        HitResult,
-        StartLocation,
-        EndLocation,                      
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
-        QueryParams
-    );
-
+	FHitResult HitResult = PlayerTrace();    
 	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 
@@ -182,12 +176,35 @@ void AIBTestCharacter::EndGrab(const FInputActionValue& Value)
 	}
 }
 
+FHitResult AIBTestCharacter::PlayerTrace() 
+{
+	FHitResult HitResult;    
+    FCollisionQueryParams QueryParams(FName(TEXT("PlayerTrace")), false, GetOwner());    
+
+	FVector StartLocation;
+	FVector EndLocation; 
+	GetPlayerInteractionRange(StartLocation, EndLocation);
+
+	//GetWorld()->LineTraceSingleByObjectType
+	GetWorld()->LineTraceSingleByChannel
+    (
+        HitResult,
+        StartLocation,
+        EndLocation,                      
+		ECollisionChannel::ECC_Visibility,
+        QueryParams
+    );
+
+	return HitResult;
+}
+
 void AIBTestCharacter::GetPlayerInteractionRange(FVector& StartLocation, FVector& EndLocation)
 {
 	if(!FirstPersonCameraComponent) return;
 
+	const float Range = 400.f;
 	StartLocation = FirstPersonCameraComponent->GetComponentLocation();
-	EndLocation = StartLocation + FirstPersonCameraComponent->GetForwardVector() * 300.f;
+	EndLocation = StartLocation + FirstPersonCameraComponent->GetForwardVector() * Range;
 }
 
 void AIBTestCharacter::SetHasRifle(bool bNewHasRifle)

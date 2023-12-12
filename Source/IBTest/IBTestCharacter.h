@@ -102,6 +102,8 @@ protected:
 	/** Called for end grab interaction */
 	void EndGrab(const FInputActionValue& Value);
 
+	FHitResult PlayerTrace();
+
 	void GetPlayerInteractionRange(FVector& StartLocation, FVector& EndLocation);
 
 protected:
