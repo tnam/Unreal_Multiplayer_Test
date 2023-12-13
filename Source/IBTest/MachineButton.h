@@ -30,8 +30,9 @@ public:
 	AMachineButton();
 
 	// IInteractionInterface Begin
-	virtual void Interact1_Implementation() override;		
-	virtual void Interact2_Implementation() override;
+	bool CanInteract_Implementation() override;		
+	void Interact1_Implementation() override;		
+	void Interact2_Implementation() override;
 	// IInteractionInterface End
 
 protected:

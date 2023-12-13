@@ -11,6 +11,7 @@
 class UBoxComponent;
 class AShape;
 class UNiagaraSystem;
+class USoundBase;
 
 UCLASS()
 class IBTEST_API AMachine : public AActor
@@ -23,15 +24,21 @@ private:
 
 	TArray<FRecipeData*> CachedRecipes; 
 
+	UPROPERTY(ReplicatedUsing=OnRep_SetEnabled)
+	bool bEnabled;
+
 protected:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent> Mesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Machine")
+	TObjectPtr<UStaticMeshComponent> BaseMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Machine")
+	TObjectPtr<UStaticMeshComponent> BodyMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Machine")
 	TObjectPtr<UBoxComponent> CollisionBox;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Machine")
 	TObjectPtr<UNiagaraSystem> SpawnEffect;
 
 public:
@@ -51,19 +58,32 @@ protected:
 
 	void CheckRecipes();
 
-	void ConsumeRecipe(const FRecipeData* RecipeData);
+	void ConsumeRecipe(const FRecipeData* RecipeData, bool bConsumeIngredients = true);
 
 	bool IsMissingIngredient(const FRecipeData* RecipeData) const;
 
 	void SpawnShapeByName(const FName& ShapeName);
 
+	UFUNCTION(NetMulticast, Unreliable)
 	void PlaySpawnEffect();
 
+	// Replication
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_SetEnabled();
+
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	FRecipeData* GetRecipeData(const FName& RecipeName) const;
+
+	FRecipeData* GetRandomRecipeData() const;
+
+	FORCEINLINE bool IsMachineEnabled() const { return bEnabled; }
+
+	void SetMachineEnabled(bool bEnabled);
+
+	void CompleteRandomRecipe();
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult); 

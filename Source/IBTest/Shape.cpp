@@ -12,6 +12,9 @@ AShape::AShape()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh Component"));
 	MeshComponent->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	RootComponent = MeshComponent;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned

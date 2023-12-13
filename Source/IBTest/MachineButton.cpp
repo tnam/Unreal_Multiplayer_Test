@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MachineButton.h"
+#include "Machine.h"
 
 // Sets default values
 AMachineButton::AMachineButton()
@@ -13,14 +13,32 @@ AMachineButton::AMachineButton()
 	RootComponent = ButtonMesh;
 }
 
+bool AMachineButton::CanInteract_Implementation()
+{
+	if (MachineRef)
+	{
+		return MachineRef->IsMachineEnabled();
+	}
+
+	return false;
+}
+
 void AMachineButton::Interact1_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interact 1"));
+	if (MachineRef)
+	{
+		const bool bMachineEnabled = MachineRef->IsMachineEnabled();
+		MachineRef->SetMachineEnabled(!bMachineEnabled);
+	}
 }
 
 void AMachineButton::Interact2_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interact 2"));
+	if (MachineRef)
+	{
+		const bool bMachineEnabled = MachineRef->IsMachineEnabled();
+		MachineRef->CompleteRandomRecipe();
+	}
 }
 
 // Called when the game starts or when spawned

@@ -12,6 +12,7 @@
 #include "Engine/LocalPlayer.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interfaces/IInteractionInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -106,6 +107,37 @@ void AIBTestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
+void AIBTestCharacter::Server_Interact1_Implementation(const FHitResult& HitResult)
+{
+	AActor* HitActor = HitResult.GetActor();
+
+	if (HitActor &&
+		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+	{
+		IInteractionInterface::Execute_Interact2(HitActor);
+	}
+}
+
+bool AIBTestCharacter::Server_Interact1_Validate(const FHitResult& HitResult)
+{
+	return true;
+}
+
+void AIBTestCharacter::Server_Interact2_Implementation(const FHitResult& HitResult)
+{
+	AActor* HitActor = HitResult.GetActor();
+
+	if (HitActor &&
+		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+	{
+		IInteractionInterface::Execute_Interact1(HitActor);
+	}
+}
+
+bool AIBTestCharacter::Server_Interact2_Validate(const FHitResult& HitResult)
+{
+	return true;
+}
 
 void AIBTestCharacter::Move(const FInputActionValue& Value)
 {
@@ -135,20 +167,34 @@ void AIBTestCharacter::Look(const FInputActionValue& Value)
 
 void AIBTestCharacter::Interact1(const FInputActionValue& Value)
 {
-	const FHitResult HitResult = PlayerTrace();    
+	FHitResult HitResult = PlayerTrace();    
 	AActor* HitActor = HitResult.GetActor();
 
 	if (HitActor &&
 		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
 	{
-		IInteractionInterface::Execute_Interact1(HitActor);
+		const bool bCanInteract = IInteractionInterface::Execute_CanInteract(HitActor);
+		if (bCanInteract)
+		{
+			if (GetLocalRole() != ROLE_Authority)
+			{
+				Server_Interact1(HitResult);
+			}
+		}
+		else
+		{
+			PlayErrorSFX();
+		}
 	}
 }
 
 void AIBTestCharacter::Interact2(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interact 2"));
-	FHitResult HitResult = PlayerTrace();    
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		FHitResult HitResult = PlayerTrace();    
+		Server_Interact2(HitResult);
+	}
 }
 
 void AIBTestCharacter::BeginGrab(const FInputActionValue& Value)
@@ -173,6 +219,14 @@ void AIBTestCharacter::EndGrab(const FInputActionValue& Value)
 	if (PhysicsHandleComponent && PhysicsHandleComponent->GetGrabbedComponent())
 	{
 		PhysicsHandleComponent->ReleaseComponent();
+	}
+}
+
+void AIBTestCharacter::PlayErrorSFX()
+{
+	if (ErrorSFX)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ErrorSFX, GetActorLocation());	
 	}
 }
 

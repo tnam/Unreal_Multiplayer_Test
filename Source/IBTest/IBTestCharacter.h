@@ -57,14 +57,19 @@ class AIBTestCharacter : public ACharacter
 	/** Grab Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* GrabAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Machine", meta=(AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase> ErrorSFX;
 	
 public:
 	AIBTestCharacter();
 
 protected:
+
 	virtual void BeginPlay();
 
 	void Tick( float DeltaSeconds );
+
 public:
 		
 	/** Look Input Action */
@@ -102,14 +107,21 @@ protected:
 	/** Called for end grab interaction */
 	void EndGrab(const FInputActionValue& Value);
 
+	void PlayErrorSFX();
+
 	FHitResult PlayerTrace();
 
 	void GetPlayerInteractionRange(FVector& StartLocation, FVector& EndLocation);
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_Interact1(const FHitResult& HitResult);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_Interact2(const FHitResult& HitResult);
 
 public:
 	/** Returns Mesh1P subobject **/
