@@ -10,6 +10,7 @@
 #include "Algo/Accumulate.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/DataTableFunctionLibrary.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 namespace
 {
@@ -165,7 +166,12 @@ void AMachine::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifeti
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AMachine, bEnabled);
+
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+
+	DOREPLIFETIME_WITH_PARAMS_FAST(AMachine, bEnabled, Params);
 }
 
 void AMachine::OnRep_SetEnabled()
@@ -210,7 +216,10 @@ FRecipeData* AMachine::GetRandomRecipeData() const
 
 void AMachine::SetMachineEnabled(bool bMachineEnabled)
 {
+	if (bEnabled == bMachineEnabled) return;
+
 	bEnabled = bMachineEnabled;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AMachine, bEnabled, this);
 
 	if (bEnabled)
 	{
