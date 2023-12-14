@@ -20,10 +20,13 @@ class IBTEST_API AMachine : public AActor
 
 private:
 
-	TMultiMap<FName, AShape*> ShapeIngredients; 
-
+	/** Cached recipes sorted by total number of recipes */
 	TArray<FRecipeData*> CachedRecipes; 
 
+	/** All shapes ready to be processed by the machine */
+	TMultiMap<FName, AShape*> ShapeIngredients; 
+
+	/** The machine can only process recipes when bEnabled is true */
 	UPROPERTY(ReplicatedUsing=OnRep_SetEnabled)
 	bool bEnabled;
 
@@ -43,6 +46,7 @@ protected:
 
 public:
 
+	/** Recipe id used by this machine */
 	UPROPERTY(EditInstanceOnly, Category="Machine")
 	TArray<FName> RecipeIDs;
 	

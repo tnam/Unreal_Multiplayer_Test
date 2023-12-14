@@ -96,7 +96,7 @@ void AMachine::CheckRecipes()
 void AMachine::ConsumeRecipe(const FRecipeData* RecipeData, bool bConsumeIngredients /* = true */)
 {
 	// Destroy shape ingredients (only the ones used by the recipe)
-	if(bConsumeIngredients)
+	if (bConsumeIngredients)
 	{ 
 		const TMap<FName, int>& InputShapes = RecipeData->InShapes;
 		for (const auto& InputShape : InputShapes)
@@ -119,6 +119,11 @@ void AMachine::ConsumeRecipe(const FRecipeData* RecipeData, bool bConsumeIngredi
 
 	// Finally spawn the output shape
 	SpawnShapeByName(RecipeData->OutShape);
+
+	if (GetLocalRole() == ROLE_Authority && GetNetMode() != NM_DedicatedServer)
+	{
+		PlaySpawnEffect_Implementation();
+	}
 }
 
 bool AMachine::IsMissingIngredient(const FRecipeData* RecipeData) const
@@ -166,7 +171,7 @@ void AMachine::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifeti
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-
+	// Using push model
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
@@ -176,6 +181,7 @@ void AMachine::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifeti
 
 void AMachine::OnRep_SetEnabled()
 {
+	// Change body material to show if the machine is on or off (green: on, red: off)
 	if (BodyMesh)
 	{
 		BodyMesh->SetCustomPrimitiveDataFloat(0, bEnabled ? 0.f : 1.f);

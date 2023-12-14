@@ -17,6 +17,7 @@ class IBTEST_API AMachineButton : public AActor, public IInteractionInterface
 
 private:
 
+	/** Reference of the machine controlled by this button actor */
 	UPROPERTY(EditInstanceOnly)
 	AMachine* MachineRef;
 
@@ -34,13 +35,4 @@ public:
 	void Interact1_Implementation() override;		
 	void Interact2_Implementation() override;
 	// IInteractionInterface End
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 };

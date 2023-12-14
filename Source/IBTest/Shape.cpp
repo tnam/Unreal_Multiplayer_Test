@@ -16,18 +16,3 @@ AShape::AShape()
 	SetReplicates(true);
 	SetReplicateMovement(true);
 }
-
-// Called when the game starts or when spawned
-void AShape::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AShape::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

@@ -44,17 +44,3 @@ void AMachineButton::Interact2_Implementation()
 	}
 }
 
-// Called when the game starts or when spawned
-void AMachineButton::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AMachineButton::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

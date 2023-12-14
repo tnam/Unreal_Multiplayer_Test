@@ -58,6 +58,7 @@ class AIBTestCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* GrabAction;
 
+	/** SFX used when failing to spawn a recipe when the machine is off */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Machine", meta=(AllowPrivateAccess = "true"))
 	TObjectPtr<USoundBase> ErrorSFX;
 	
@@ -80,14 +81,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
 
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -107,19 +100,24 @@ protected:
 	/** Called for end grab interaction */
 	void EndGrab(const FInputActionValue& Value);
 
+	/** Play error sound */
 	void PlayErrorSFX();
 
+	/** Line trace used to interact with interactable objects */
 	FHitResult PlayerTrace();
 
+	/** Return start and end location of the ray used to scan for objects */
 	void GetPlayerInteractionRange(FVector& StartLocation, FVector& EndLocation);
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	/** Server rpc to perform first interaction */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_Interact1(const FHitResult& HitResult);
 
+	/** Server rpc to perform second interaction */
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_Interact2(const FHitResult& HitResult);
 

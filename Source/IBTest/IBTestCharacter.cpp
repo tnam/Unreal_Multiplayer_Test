@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "IBTestCharacter.h"
-#include "IBTestProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -65,6 +64,7 @@ void AIBTestCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// Update physics handle used for grabbing actions
 	if (PhysicsHandleComponent && PhysicsHandleComponent->GetGrabbedComponent())
 	{
 		FVector StartLocation;
@@ -180,8 +180,9 @@ void AIBTestCharacter::Interact1(const FInputActionValue& Value)
 			{
 				Server_Interact1(HitResult);
 			}
-			else
+			else if (GetNetMode() != NM_DedicatedServer)
 			{
+				// Call non-rpc version for listen server
 				Server_Interact1_Implementation(HitResult);
 			}
 		}
@@ -199,14 +200,17 @@ void AIBTestCharacter::Interact2(const FInputActionValue& Value)
 	{
 		Server_Interact2(HitResult);
 	}
-	else
+	else if (GetNetMode() != NM_DedicatedServer)
 	{
+		// Call non-rpc version for listen server
 		Server_Interact2_Implementation(HitResult);
 	}
 }
 
 void AIBTestCharacter::BeginGrab(const FInputActionValue& Value)
 {
+	// TODO: Consider putting this stuff under IInteractionInterface and add support for multiplayer
+
 	FHitResult HitResult = PlayerTrace();    
 	AActor* HitActor = HitResult.GetActor();
 	UPrimitiveComponent* HitComponent = HitResult.GetComponent();
@@ -247,7 +251,6 @@ FHitResult AIBTestCharacter::PlayerTrace()
 	FVector EndLocation; 
 	GetPlayerInteractionRange(StartLocation, EndLocation);
 
-	//GetWorld()->LineTraceSingleByObjectType
 	GetWorld()->LineTraceSingleByChannel
     (
         HitResult,
@@ -264,17 +267,7 @@ void AIBTestCharacter::GetPlayerInteractionRange(FVector& StartLocation, FVector
 {
 	if(!FirstPersonCameraComponent) return;
 
-	const float Range = 400.f;
+	const float Range = 500.f;
 	StartLocation = FirstPersonCameraComponent->GetComponentLocation();
 	EndLocation = StartLocation + FirstPersonCameraComponent->GetForwardVector() * Range;
-}
-
-void AIBTestCharacter::SetHasRifle(bool bNewHasRifle)
-{
-	bHasRifle = bNewHasRifle;
-}
-
-bool AIBTestCharacter::GetHasRifle()
-{
-	return bHasRifle;
 }

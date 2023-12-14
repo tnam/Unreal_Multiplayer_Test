@@ -16,18 +16,11 @@ public:
 	// Sets default values for this actor's properties
 	AShape();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	FORCEINLINE FName GetShapeID() { return ShapeID; }
 
 public:
 
+	// Unique String ID of this shape
 	UPROPERTY(EditAnywhere, Category = "Shape")
 	FName ShapeID;
 
