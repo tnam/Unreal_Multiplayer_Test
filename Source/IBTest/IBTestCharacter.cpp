@@ -114,7 +114,7 @@ void AIBTestCharacter::Server_Interact1_Implementation(const FHitResult& HitResu
 	if (HitActor &&
 		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
 	{
-		IInteractionInterface::Execute_Interact2(HitActor);
+		IInteractionInterface::Execute_Interact1(HitActor);
 	}
 }
 
@@ -130,7 +130,7 @@ void AIBTestCharacter::Server_Interact2_Implementation(const FHitResult& HitResu
 	if (HitActor &&
 		HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
 	{
-		IInteractionInterface::Execute_Interact1(HitActor);
+		IInteractionInterface::Execute_Interact2(HitActor);
 	}
 }
 
@@ -180,6 +180,10 @@ void AIBTestCharacter::Interact1(const FInputActionValue& Value)
 			{
 				Server_Interact1(HitResult);
 			}
+			else
+			{
+				Server_Interact1_Implementation(HitResult);
+			}
 		}
 		else
 		{
@@ -190,10 +194,14 @@ void AIBTestCharacter::Interact1(const FInputActionValue& Value)
 
 void AIBTestCharacter::Interact2(const FInputActionValue& Value)
 {
+	FHitResult HitResult = PlayerTrace();    
 	if (GetLocalRole() != ROLE_Authority)
 	{
-		FHitResult HitResult = PlayerTrace();    
 		Server_Interact2(HitResult);
+	}
+	else
+	{
+		Server_Interact2_Implementation(HitResult);
 	}
 }
 

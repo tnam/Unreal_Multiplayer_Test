@@ -70,10 +70,10 @@ protected:
 	// Replication
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
+public:	
+
 	UFUNCTION()
 	void OnRep_SetEnabled();
-
-public:	
 
 	FRecipeData* GetRecipeData(const FName& RecipeName) const;
 

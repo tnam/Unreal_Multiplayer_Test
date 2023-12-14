@@ -28,7 +28,7 @@ void AMachineButton::Interact1_Implementation()
 	if (MachineRef)
 	{
 		const bool bMachineEnabled = MachineRef->IsMachineEnabled();
-		MachineRef->SetMachineEnabled(!bMachineEnabled);
+		MachineRef->CompleteRandomRecipe();
 	}
 }
 
@@ -37,7 +37,10 @@ void AMachineButton::Interact2_Implementation()
 	if (MachineRef)
 	{
 		const bool bMachineEnabled = MachineRef->IsMachineEnabled();
-		MachineRef->CompleteRandomRecipe();
+		MachineRef->SetMachineEnabled(!bMachineEnabled);
+
+		// Called for listen server
+		MachineRef->OnRep_SetEnabled();	
 	}
 }
 
